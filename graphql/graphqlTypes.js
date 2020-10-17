@@ -32,10 +32,38 @@ const BookType = new GraphQLObjectType({
     })
 })
 
+const RootMutation = new GraphQLObjectType({
+    name: 'Mutation',
+    description: 'Root Mutation',
+    fields: () => ({
+        addBook: {
+            type: BookType,
+            description: 'Add a Book',
+            args: {
+                name: { type: GraphQLString },
+                authorId: { type: GraphQLInt },
+            },
+            resolve: (parent, args) => {
+                const book = { id: db.books.length + 1, name: args.name, authorId: args.authorId };
+                db.books.push(book);
+                return book;
+            }
+        }
+    })
+})
+
 const RootsQueryType = new GraphQLObjectType({
     name: 'query',
     description: 'Root Query',
     fields: () => ({
+        book: {
+            type: BookType,
+            description: 'One Book',
+            args: {
+                id: { type: GraphQLInt }
+            },
+            resolve: (parent, args) => db.books.find(book => book.id === args.id)
+        },
         books: {
             type: new GraphQLList(BookType),
             description: 'List of books',
@@ -49,4 +77,7 @@ const RootsQueryType = new GraphQLObjectType({
     })
 })
 
-module.exports = RootsQueryType;
+module.exports = {
+    RootMutation,
+    RootsQueryType
+};
